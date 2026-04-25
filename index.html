@@ -9,8 +9,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#060d1f;--bg2:#0a1628;--bg3:#0d1e35;
-  --border:#1a2d4a;--border2:#243d5c;
+  --bg:#0f1f3d;--bg2:#162540;--bg3:#1a2d4e;
+  --border:#2a3f60;--border2:#334d72;
   --blue:#3b82f6;--cyan:#06b6d4;--emerald:#10b981;--violet:#8b5cf6;--amber:#f59e0b;--rose:#f43f5e;--gold:#fbbf24;
   --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
 }
@@ -34,7 +34,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .fade-up:nth-child(4){animation-delay:0.4s}
 
 /* AUTH */
-#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;background:radial-gradient(ellipse at 50% 0%,rgba(59,130,246,0.15) 0%,transparent 70%)}
+#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;background:radial-gradient(ellipse at 50% 0%,rgba(59,130,246,0.2) 0%,transparent 70%)}
+.avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid rgba(59,130,246,0.5);box-shadow:0 0 16px rgba(59,130,246,0.3)}
 .auth-logo{width:64px;height:64px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;box-shadow:0 0 40px rgba(59,130,246,0.4)}
 .auth-title{font-size:28px;font-weight:700;background:linear-gradient(135deg,#f1f5f9,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .auth-sub{font-size:13px;color:var(--text3);text-align:center;max-width:280px;line-height:1.7}
@@ -243,7 +244,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   <div class="app">
     <div class="header">
       <div class="logo">
-        <div class="logo-mark">JC</div>
+        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAoACgDASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAABQYDBAcCAQD/xAAuEAACAQMDAgUDBAMAAAAAAAABAgMABBEFEiExBhNBUWEiMnGBkRQjQqHB0f/EABgBAAMBAQAAAAAAAAAAAAAAAAABAgME/8QAHhEAAgIDAAMAAAAAAAAAAAAAAAECEQMSITFB/9oADAMBAAIRAxEAPwC3Y6dpktwIrhVlHUEEVotR8P6ZJbf4l2kDDovpXNaXeW1neW0/iIsn3EBT3O3euq1DVYb+3Mq4Q44I70Wqhwy9cZe0cBJompW0bRwRSqnY7etU30+8t2CvFID7qR+tdjY63FHMsJUhW4OPWrF9qSRwFiV4GfSnUscWPijl5dV0Sp4n1IWwt/PlAAx8x5rNW95cwPlbiQexNWbvVpLy4aRzxnA9hVQnmuJQyjpRoxnX2Ou0nVby1kVXmZ0PBDHOKu3GmWGpIJI8K/wCpFc+Y2j5FXrC5lgGGPFNkknoxWaXRIbDR7i2vJIl3NGnOG9alre3cEdut2pjd15Vh1FMlre/hzIjb2QEbsd6zN3qN1BEz+K8W3sKSVuiWmhsLv9+kS2lzMkQ4jRWIx6D0puPhvTbqMs9lGGP6hkH86oWOs3Ec4lMpkHYFqtwa1DIuCyjH0oVk4xWxx5Sce7Jg8MaOF/8ATH/N6v2Gj6daPvgtI0b1wKpLqURbAkU/erEV7HjII/eo3Suhuyc3T3NRRRXQeaFFFFABRRRQAUUUUAf/2Q==" class="avatar" alt="JC">
         <div class="logo-text">
           <h1>Command Center</h1>
           <p id="cal-date">—</p>
