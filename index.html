@@ -352,7 +352,7 @@ const SCOPES='https://www.googleapis.com/auth/calendar https://www.googleapis.co
 const CALENDAR_API='https://www.googleapis.com/calendar/v3';
 const GMAIL_API='https://www.googleapis.com/gmail/v1';
 const TZ='Asia/Manila';
-const STORAGE_KEY='jc_hq_v6';
+const STORAGE_KEY='jc_hq_v5';
 const RITUALS=[
   {name:'Bible',icon:'📖',color:'#d97706'},
   {name:'News',icon:'📰',color:'#0891b2'},
@@ -720,7 +720,12 @@ function init(){
   checkReset();if(!data.tasks)data.tasks=[];if(!data.notes)data.notes='';if(!data.workoutProgress)data.workoutProgress={};
   if(data.newsIndices&&data.newsIndices.length===4)activeNewsIndices=data.newsIndices;
   else{const s=[...Array(NEWS_POOL.length).keys()].sort(()=>Math.random()-0.5);activeNewsIndices=s.slice(0,4);data.newsIndices=activeNewsIndices;saveData();}
-  updateClock();buildCalendar();buildPriorities();buildRituals();buildTasks();initNotes();renderNews();loadBibleVerse();loadWorkout();fetchGcalEvents();fetchGmail();updateBriefing();
+  updateClock();buildCalendar();buildPriorities();buildRituals();buildTasks();initNotes();
+  refreshNews();
+  loadBibleVerse();loadWorkout();
+  fetchGcalEvents();
+  setTimeout(()=>fetchGmail(),1500);
+  updateBriefing();
   setInterval(updateClock,1000);setInterval(()=>{checkReset();fetchGcalEvents();},5*60*1000);
 }
 </script>
