@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JC HQ</title>
+<!-- STEP 1: Replace YOUR_GOOGLE_CLIENT_ID below with your OAuth Client ID from Google Cloud Console -->
+<meta name="google-client-id" content="YOUR_GOOGLE_CLIENT_ID">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;font-size:14px;min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0e1a}::-webkit-scrollbar-thumb{background:#2d3a5e;border-radius:2px}
+.app{max-width:1280px;margin:0 auto;padding:20px}
+/* Auth screen */
+#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:24px}
+.auth-logo{width:56px;height:56px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
+.auth-title{font-size:22px;font-weight:600;color:#f1f5f9}
+.auth-sub{font-size:13px;color:#475569;text-align:center;max-width:300px;line-height:1.6}
+.btn-google{display:flex;align-items:center;gap:10px;padding:12px 24px;background:#fff;color:#1a202c;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
+.btn-google:hover{opacity:0.9}
+.btn-google svg{width:18px;height:18px}
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1a2340}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+h1{font-size:20px;font-weight:600;color:#f1f5f9;letter-spacing:-0.3px}
+.header-right{display:flex;align-items:center;gap:14px}
+.clock{font-size:13px;color:#64748b;font-weight:500;font-variant-numeric:tabular-nums}
+.day-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;letter-spacing:0.3px}
+.weekday{background:#0f1e3d;color:#60a5fa;border:1px solid #1e3a6e}
+.weekend{background:#1a1a0f;color:#fbbf24;border:1px solid #3d3500}
+.btn-signout{background:none;border:1px solid #1e2d50;color:#475569;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;transition:all 0.15s}
+.btn-signout:hover{border-color:#334155;color:#94a3b8}
+/* Briefing */
+.briefing{background:#0d1424;border:1px solid #1e2d50;border-left:3px solid #3b82f6;border-radius:10px;padding:16px 20px;margin-bottom:20px;position:relative;overflow:hidden}
+.briefing::before{content:'';position:absolute;top:0;right:0;width:200px;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.03));pointer-events:none}
+.briefing-label{font-size:10px;font-weight:600;color:#3b82f6;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.briefing-inner{font-size:13px;line-height:1.8;color:#94a3b8}
+.briefing-inner .b-line{margin-bottom:1px}
+.briefing-inner .b-line:first-child{color:#e2e8f0;font-weight:500}
+/* Layout */
+.layout{display:grid;grid-template-columns:1fr 300px;gap:16px}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
+/* Calendar */
+.calendar-wrap{background:#0d1424;border:1px solid #1e2d50;border-radius:10px;overflow:hidden}
+.cal-header{padding:14px 18px;background:#0a1020;border-bottom:1px solid #1e2d50;display:flex;justify-content:space-between;align-items:center}
+.cal-title{font-size:13px;font-weight:600;color:#e2e8f0}
+.cal-meta{display:flex;align-items:center;gap:8px}
+.gcal-badge{font-size:10px;background:#0a2010;color:#4ade80;border:1px solid #166534;padding:2px 8px;border-radius:10px;font-weight:500}
+.cal-tz{font-size:10px;color:#475569}
+.time-slot{display:flex;border-bottom:1px solid #111827;min-height:34px;cursor:pointer;transition:background 0.12s}
+.time-slot:hover{background:#111827}
+.time-slot.has-event{background:#0f1e35}
+.time-slot.gcal-event{background:#0a1f12;cursor:default}
+.time-slot.gcal-event:hover{background:#0f2918}
+.time-slot.current-hour{background:#1a0a0a}
+.time-slot.editing{background:#1a1505}
+.slot-time{width:76px;min-width:76px;padding:7px 10px;font-size:11px;color:#334155;font-weight:500;border-right:1px solid #111827;display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+.slot-content{flex:1;padding:3px 10px;display:flex;align-items:center;gap:8px}
+.slot-input{flex:1;border:none;background:transparent;font-size:12.5px;color:#e2e8f0;outline:none;padding:4px 0;font-family:inherit}
+.slot-input::placeholder{color:#334155}
+.event-text{flex:1;font-size:12.5px;color:#93c5fd;line-height:1.4;padding:4px 0}
+.gcal-text{flex:1;font-size:12.5px;color:#4ade80;line-height:1.4;padding:4px 0;font-weight:500}
+.gcal-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.remove-btn{font-size:10px;color:#334155;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:3px;opacity:0;transition:opacity 0.15s;font-family:inherit}
+.time-slot:hover .remove-btn{opacity:1}
+.remove-btn:hover{color:#ef4444;background:#1f0a0a}
+.current-time-label{font-size:9px;background:#ef4444;color:#fff;border-radius:3px;padding:1px 4px;font-weight:600}
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;gap:12px}
+.card{background:#0d1424;border:1px solid #1e2d50;border-radius:10px;padding:14px 16px}
+.card-title{font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.card-title-accent{width:3px;height:3px;border-radius:50%;background:#3b82f6;display:inline-block;margin-right:6px}
+.input-row{display:flex;gap:6px;margin-bottom:10px}
+.input-row input{flex:1;padding:7px 10px;background:#070d1a;border:1px solid #1e2d50;border-radius:6px;font-size:12px;color:#e2e8f0;font-family:inherit;outline:none;transition:border-color 0.15s}
+.input-row input:focus{border-color:#3b82f6}
+.input-row input::placeholder{color:#334155}
+.btn-add{padding:7px 12px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11.5px;font-weight:500;font-family:inherit;transition:background 0.15s;white-space:nowrap}
+.btn-add:hover{background:#2563eb}
+.priority-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #111827;font-size:12px;color:#cbd5e1;line-height:1.5}
+.priority-item:last-child{border-bottom:none}
+.priority-num{color:#3b82f6;font-weight:600;min-width:14px;font-size:11px;margin-top:1px}
+.icon-btn{background:none;border:none;color:#334155;cursor:pointer;font-size:11px;padding:0 3px;transition:color 0.15s;font-family:inherit}
+.icon-btn:hover{color:#ef4444}
+.empty-state{font-size:11.5px;color:#334155;font-style:italic;padding:4px 0}
+.ritual-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:background 0.1s}
+.ritual-item:hover{background:#111827}
+.ritual-item input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;flex-shrink:0}
+.ritual-item label{font-size:12.5px;color:#94a3b8;cursor:pointer;flex:1}
+.ritual-item.done label{color:#3b82f6;text-decoration:line-through;opacity:0.7}
+.task-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid #111827}
+.task-item:last-child{border-bottom:none}
+.task-item input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;margin-top:2px;flex-shrink:0;cursor:pointer}
+.task-item label{font-size:12px;color:#94a3b8;cursor:pointer;flex:1;line-height:1.5}
+.task-item.done label{text-decoration:line-through;color:#334155}
+.notes-area{width:100%;min-height:80px;background:#070d1a;border:1px solid #1e2d50;border-radius:6px;padding:9px 10px;font-size:12px;color:#94a3b8;resize:vertical;font-family:inherit;line-height:1.6;outline:none;transition:border-color 0.15s}
+.notes-area:focus{border-color:#3b82f6}
+.notes-area::placeholder{color:#334155}
+.notes-saved{font-size:10px;color:#22c55e;margin-top:5px;opacity:0;transition:opacity 0.4s;text-align:right}
+.notes-saved.show{opacity:1}
+.news-item{padding:9px 0;border-bottom:1px solid #111827}
+.news-item:last-child{border-bottom:none}
+.news-item a{font-size:12px;font-weight:500;color:#60a5fa;text-decoration:none;line-height:1.4;display:block;margin-bottom:3px}
+.news-item a:hover{color:#93c5fd}
+.news-summary{font-size:11px;color:#475569;line-height:1.5}
+.news-source{font-size:10px;color:#334155;margin-top:3px}
+.refresh-btn{display:flex;align-items:center;gap:5px;margin-bottom:10px;padding:5px 10px;border:1px solid #1e2d50;background:#070d1a;border-radius:5px;cursor:pointer;font-size:11px;color:#475569;font-family:inherit;transition:all 0.15s}
+.refresh-btn:hover{background:#111827;color:#94a3b8;border-color:#2d3a5e}
+.toast{position:fixed;bottom:20px;right:20px;font-size:11px;padding:8px 16px;border-radius:6px;opacity:0;transition:opacity 0.3s;pointer-events:none;font-family:inherit;font-weight:500}
+.toast.success{background:#0f2918;border:1px solid #166534;color:#4ade80}
+.toast.error{background:#1f0a0a;border:1px solid #7f1d1d;color:#fca5a5}
+.toast.show{opacity:1}
+.sync-spinner{display:inline-block;width:8px;height:8px;border:1.5px solid #334155;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.6s linear infinite;margin-left:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="auth-screen">
+  <div class="auth-logo">JC</div>
+  <div class="auth-title">JC HQ</div>
+  <div class="auth-sub">Sign in with Google to connect your calendar and start your day.</div>
+  <button class="btn-google" onclick="handleSignIn()">
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+    Sign in with Google
+  </button>
+</div>
+
+<!-- Main App (hidden until auth) -->
+<div id="main-app" style="display:none">
+  <div class="app">
+    <div class="header">
+      <div class="logo">
+        <div class="logo-mark">JC</div>
+        <div>
+          <h1>Command Center</h1>
+          <div style="font-size:11px;color:#334155;margin-top:1px" id="cal-date">—</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="day-badge" id="day-badge">—</span>
+        <div class="clock" id="clock">—</div>
+        <button class="btn-signout" onclick="handleSignOut()">Sign out</button>
+      </div>
+    </div>
+
+    <div class="briefing">
+      <div class="briefing-label">&#9632; Daily Briefing</div>
+      <div id="briefing"><div class="briefing-inner">Loading your day...</div></div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="calendar-wrap">
+          <div class="cal-header">
+            <div class="cal-title">Daily Schedule <span id="sync-indicator"></span></div>
+            <div class="cal-meta">
+              <span class="gcal-badge" id="gcal-status">&#10003; Google Calendar</span>
+              <span class="cal-tz">Asia/Manila</span>
+            </div>
+          </div>
+          <div id="calendar"></div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="card">
+          <div class="card-title"><span><span class="card-title-accent"></span>Top 3 Priorities</span></div>
+          <div class="input-row">
+            <input type="text" id="priority-input" placeholder="What must move today?" maxlength="80">
+            <button class="btn-add" onclick="addPriority()">Add</button>
+          </div>
+          <div id="priority-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <span><span class="card-title-accent"></span>Intelligence Brief</span>
+            <button class="refresh-btn" onclick="refreshNews()" style="margin:0;padding:3px 8px;font-size:10px">&#8635; Refresh</button>
+          </div>
+          <div id="news-container"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span><span class="card-title-accent"></span>Daily Rituals</span></div>
+          <div id="ritual-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span><span class="card-title-accent"></span>Task List</span></div>
+          <div class="input-row">
+            <input type="text" id="task-input" placeholder="Add a task..." maxlength="120">
+            <button class="btn-add" onclick="addTask()">Add</button>
+          </div>
+          <div id="task-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span><span class="card-title-accent"></span>Notes</span></div>
+          <textarea class="notes-area" id="notes-area" placeholder="Capture ideas, follow-ups, context..."></textarea>
+          <div class="notes-saved" id="notes-saved">&#10003; Saved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+/* ─── CONFIG ──────────────────────────────────────────────
+   Replace YOUR_GOOGLE_CLIENT_ID with your actual client ID.
+   Get it from: console.cloud.google.com
+   APIs to enable: Google Calendar API
+   Authorized JS origins: https://your-vercel-domain.vercel.app
+   Authorized redirect URIs: https://your-vercel-domain.vercel.app
+─────────────────────────────────────────────────────────── */
+const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
+const SCOPES = 'https://www.googleapis.com/auth/calendar';
+const CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
+const TZ = 'Asia/Manila';
+const STORAGE_KEY = 'jc_hq_v4';
+const RITUALS = ['Bible','News','Workout','Deep Work'];
+
+const NEWS_POOL=[
+  {title:"The AI Opportunity in Consumer Goods",url:"https://www.mckinsey.com/industries/consumer-packaged-goods/our-insights/the-ai-opportunity-in-consumer-goods",summary:"McKinsey maps how CPG leaders are deploying AI across demand sensing, personalization, and shelf execution — and why the gap between early movers and laggards is widening faster than expected.",source:"McKinsey & Company"},
+  {title:"How Brands Are Winning on TikTok Shop in Southeast Asia",url:"https://www.thinkwithgoogle.com/intl/en-apac/consumer-insights/consumer-trends/social-commerce-southeast-asia/",summary:"Google's APAC consumer research shows social commerce in SEA is shifting from discovery to full-funnel conversion — and brands with integrated creator strategies are outpacing pure performance players.",source:"Think with Google"},
+  {title:"Brand Building in a Performance-Obsessed World",url:"https://www.bain.com/insights/brand-building-performance-marketing/",summary:"Bain's analysis of 150 consumer brands finds companies that maintained brand investment during downturns recovered market share 2x faster.",source:"Bain & Company"},
+  {title:"The Future of Marketing Measurement",url:"https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-future-of-marketing-measurement",summary:"With third-party cookies fading, McKinsey lays out how leading marketers are rebuilding measurement architecture around incrementality testing and media mix modeling.",source:"McKinsey & Company"},
+  {title:"Personalization at Scale: What Actually Works",url:"https://www.bcg.com/publications/2023/personalization-at-scale-in-consumer-goods",summary:"BCG's study of 50 CPG companies finds that personalization ROI is concentrated in three moments: onboarding, repurchase triggers, and win-back.",source:"BCG"},
+  {title:"How Beauty Brands Are Rewriting the Rules of Credibility",url:"https://www.thinkwithgoogle.com/intl/en-apac/consumer-insights/consumer-trends/beauty-skincare-search-trends/",summary:"APAC beauty consumers are bypassing brand claims and searching for ingredient science directly — creating a new credibility battleground.",source:"Think with Google"},
+  {title:"The Loyalty Trap: Why Satisfaction Scores Mislead",url:"https://hbr.org/2014/10/the-hidden-dangers-of-customer-satisfaction",summary:"HBR's research shows satisfied customers defect at rates that shock most brand managers — exposing why emotional connection, not satisfaction metrics, predicts retention.",source:"Harvard Business Review"},
+  {title:"Retail Media's Next Act",url:"https://www.mckinsey.com/industries/retail/our-insights/retail-media-the-new-growth-engine",summary:"McKinsey outlines how retail media is evolving from a shopper marketing add-on to a core demand-generation engine with major implications for CPG marketing mix.",source:"McKinsey & Company"},
+  {title:"CPG Growth in Emerging Markets: The New Playbook",url:"https://www.bcg.com/publications/2023/cpg-growth-emerging-markets",summary:"BCG identifies the five moves that separate growing CPG brands in Southeast Asia: right-sizing packs, channel-specific pricing, local brand codes, digital shelf, and community-led trial.",source:"BCG"},
+  {title:"Innovation That Actually Grows Categories",url:"https://hbr.org/2011/11/the-innovation-ambition-matrix",summary:"HBR's innovation ambition matrix remains the clearest framework for CPG teams to audit whether their pipeline is genuinely disruptive or just sustaining.",source:"Harvard Business Review"},
+  {title:"Marketing Mix Modeling Is Back",url:"https://marketingbrew.com/stories/2023/06/08/marketing-mix-modeling-is-having-a-renaissance",summary:"Marketing Brew reports on why MMM has staged a major comeback among FMCG marketers post-cookie, with AI-enhanced modeling delivering channel-level insights.",source:"Marketing Brew"},
+  {title:"Why Most Brand Purpose Efforts Fail",url:"https://adage.com/article/opinion/why-brand-purpose-initiatives-fail-so-often/2383631",summary:"Ad Age's analysis finds authenticity failure — not messaging failure — is the dominant reason brand purpose initiatives backfire.",source:"Ad Age"}
+];
+
+let accessToken = null;
+let data = loadData();
+let gcalEvents = [];
+let editingSlot = null;
+let activeNewsIndices = [];
+let notesSaveTimer = null;
+
+function loadData(){
+  try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r);}catch(e){}
+  return {events:{},priorities:[],rituals:{},tasks:[],notes:'',lastReset:null,newsIndices:[]};
+}
+function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}}
+function getManilaTime(){return new Date(new Date().toLocaleString('en-US',{timeZone:TZ}));}
+
+/* ─── AUTH ─────────────────────────────────────────────── */
+function handleSignIn(){
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if(resp.error){showToast('Sign-in failed: '+resp.error,'error');return;}
+      accessToken = resp.access_token;
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('main-app').style.display='block';
+      init();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function handleSignOut(){
+  accessToken = null;
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+/* ─── GOOGLE CALENDAR API ──────────────────────────────── */
+async function fetchGcalEvents(){
+  if(!accessToken)return;
+  try{
+    const now = getManilaTime();
+    const y=now.getFullYear(),mo=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
+    const start=`${y}-${mo}-${d}T00:00:00+08:00`;
+    const end=`${y}-${mo}-${d}T23:59:59+08:00`;
+    const url=`${CALENDAR_API}/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&singleEvents=true&orderBy=startTime&timeZone=${encodeURIComponent(TZ)}`;
+    const res=await fetch(url,{headers:{Authorization:`Bearer ${accessToken}`}});
+    if(!res.ok)throw new Error('Calendar fetch failed');
+    const json=await res.json();
+    gcalEvents=(json.items||[]).filter(e=>e.start&&(e.start.dateTime||e.start.date)).map(e=>{
+      const s=new Date(e.start.dateTime||e.start.date);
+      const en=new Date(e.end.dateTime||e.end.date);
+      return {
+        id:e.id,title:e.summary||'(No title)',
+        startH:s.getHours(),startM:s.getMinutes(),
+        endH:en.getHours(),endM:en.getMinutes()
+      };
+    });
+    document.getElementById('gcal-status').textContent='✓ Google Calendar synced';
+    buildCalendar();updateBriefing();
+  }catch(err){
+    document.getElementById('gcal-status').textContent='⚠ Calendar sync error';
+    console.error(err);
+  }
+}
+
+async function createGcalEvent(key,title){
+  if(!accessToken)return;
+  const ind=document.getElementById('sync-indicator');
+  ind.innerHTML='<span class="sync-spinner"></span>';
+  try{
+    const now=getManilaTime();
+    const [hStr,rest]=key.split(':');const h=parseInt(hStr);const m=parseInt(rest);
+    const y=now.getFullYear();const mo=String(now.getMonth()+1).padStart(2,'0');const d=String(now.getDate()).padStart(2,'0');
+    const sH=String(h).padStart(2,'0');const sM=String(m).padStart(2,'0');
+    const eTotal=h*60+m+30;const eH=String(Math.floor(eTotal/60)).padStart(2,'0');const eM=String(eTotal%60).padStart(2,'0');
+    const body={
+      summary:title,
+      start:{dateTime:`${y}-${mo}-${d}T${sH}:${sM}:00+08:00`,timeZone:TZ},
+      end:{dateTime:`${y}-${mo}-${d}T${eH}:${eM}:00+08:00`,timeZone:TZ}
+    };
+    const res=await fetch(`${CALENDAR_API}/calendars/primary/events`,{
+      method:'POST',
+      headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok)throw new Error('Create failed');
+    ind.innerHTML='';
+    showToast('✓ Added to Google Calendar','success');
+    await fetchGcalEvents();
+  }catch(err){
+    ind.innerHTML='';
+    showToast('Saved locally — sync error','error');
+    console.error(err);
+  }
+}
+
+async function deleteGcalEvent(eventId){
+  if(!accessToken||!eventId)return;
+  try{
+    await fetch(`${CALENDAR_API}/calendars/primary/events/${eventId}`,{
+      method:'DELETE',
+      headers:{Authorization:`Bearer ${accessToken}`}
+    });
+    await fetchGcalEvents();
+    showToast('Removed from Google Calendar','success');
+  }catch(e){console.error(e);}
+}
+
+/* ─── CALENDAR UI ──────────────────────────────────────── */
+function checkReset(){
+  const now=getManilaTime();const today=`${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  if(data.lastReset!==today&&now.getHours()>=5){
+    const prev=data.events;data.events={};data.rituals={};data.lastReset=today;
+    if(!data.archive)data.archive=[];
+    data.archive.push({date:data.lastReset,events:prev});
+    if(data.archive.length>30)data.archive=data.archive.slice(-30);
+    saveData();
+  }
+}
+
+function formatTime(h,m){const hh=h%12||12;const ap=h<12?'AM':'PM';return `${hh}:${m===0?'00':'30'}${ap}`;}
+function slotKey(h,m){return `${h}:${m===0?'00':'30'}`;}
+
+function getGcalForSlot(h,m){
+  const ss=h*60+m,se=ss+30;
+  return gcalEvents.filter(e=>{const es=e.startH*60+e.startM,ee=e.endH*60+e.endM;return es<se&&ee>ss;});
+}
+
+function buildCalendar(){
+  const cal=document.getElementById('calendar');cal.innerHTML='';
+  const now=getManilaTime();const curH=now.getHours(),curM=now.getMinutes();
+  for(let h=5;h<=23;h++){
+    for(let m=0;m<60;m+=30){
+      if(h===23&&m===30)continue;
+      const key=slotKey(h,m);
+      const isCurrent=(h===curH&&(m===0?curM<30:curM>=30));
+      const hasEvent=!!data.events[key];
+      const gcalMatch=getGcalForSlot(h,m);const hasGcal=gcalMatch.length>0;
+      const row=document.createElement('div');
+      row.className='time-slot'+(hasGcal?' gcal-event':hasEvent?' has-event':'')+(isCurrent?' current-hour':'');
+      const timeEl=document.createElement('div');timeEl.className='slot-time';timeEl.textContent=formatTime(h,m);
+      if(isCurrent){const d=document.createElement('span');d.className='current-time-label';d.textContent='now';timeEl.appendChild(d);}
+      const contentEl=document.createElement('div');contentEl.className='slot-content';
+      if(hasGcal){
+        const dot=document.createElement('div');dot.className='gcal-dot';
+        const txt=document.createElement('div');txt.className='gcal-text';txt.textContent=gcalMatch.map(e=>e.title).join(' · ');
+        contentEl.appendChild(dot);contentEl.appendChild(txt);
+      } else if(editingSlot===key){
+        const inp=document.createElement('input');inp.className='slot-input';inp.type='text';
+        inp.value=data.events[key]||'';inp.placeholder='Block title...';
+        inp.addEventListener('keydown',e=>{
+          if(e.key==='Enter')saveSlot(key,inp.value);
+          if(e.key==='Escape'){editingSlot=null;buildCalendar();}
+        });
+        inp.addEventListener('blur',()=>{setTimeout(()=>{if(editingSlot===key)saveSlot(key,inp.value);},200);});
+        contentEl.appendChild(inp);row.classList.add('editing');setTimeout(()=>inp.focus(),10);
+      } else if(hasEvent){
+        const eventData=data.events[key];
+        const title=typeof eventData==='object'?eventData.title:eventData;
+        const gcalId=typeof eventData==='object'?eventData.gcalId:null;
+        const txt=document.createElement('div');txt.className='event-text';txt.textContent=title;
+        const rem=document.createElement('button');rem.className='remove-btn';rem.textContent='Remove';
+        rem.onclick=e=>{
+          e.stopPropagation();
+          if(gcalId)deleteGcalEvent(gcalId);
+          delete data.events[key];saveData();buildCalendar();updateBriefing();
+        };
+        contentEl.appendChild(txt);contentEl.appendChild(rem);
+        row.onclick=()=>{editingSlot=key;buildCalendar();};
+      } else {
+        row.onclick=()=>{editingSlot=key;buildCalendar();};
+      }
+      row.appendChild(timeEl);row.appendChild(contentEl);cal.appendChild(row);
+    }
+  }
+}
+
+async function saveSlot(key,val){
+  const trimmed=val.trim();
+  editingSlot=null;
+  if(trimmed){
+    data.events[key]={title:trimmed,gcalId:null};
+    saveData();buildCalendar();updateBriefing();
+    const resp=await createGcalEventAndGetId(key,trimmed);
+    if(resp){data.events[key].gcalId=resp;saveData();}
+  } else {
+    delete data.events[key];saveData();buildCalendar();updateBriefing();
+  }
+}
+
+async function createGcalEventAndGetId(key,title){
+  if(!accessToken)return null;
+  const ind=document.getElementById('sync-indicator');
+  ind.innerHTML='<span class="sync-spinner"></span>';
+  try{
+    const now=getManilaTime();
+    const [hStr,rest]=key.split(':');const h=parseInt(hStr);const m=parseInt(rest);
+    const y=now.getFullYear();const mo=String(now.getMonth()+1).padStart(2,'0');const d=String(now.getDate()).padStart(2,'0');
+    const sH=String(h).padStart(2,'0');const sM=String(m).padStart(2,'0');
+    const eTotal=h*60+m+30;const eH=String(Math.floor(eTotal/60)).padStart(2,'0');const eM=String(eTotal%60).padStart(2,'0');
+    const body={
+      summary:title,
+      start:{dateTime:`${y}-${mo}-${d}T${sH}:${sM}:00+08:00`,timeZone:TZ},
+      end:{dateTime:`${y}-${mo}-${d}T${eH}:${eM}:00+08:00`,timeZone:TZ}
+    };
+    const res=await fetch(`${CALENDAR_API}/calendars/primary/events`,{
+      method:'POST',
+      headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok)throw new Error('Create failed');
+    const json=await res.json();
+    ind.innerHTML='';
+    showToast('✓ Synced to Google Calendar','success');
+    await fetchGcalEvents();
+    return json.id||null;
+  }catch(err){
+    ind.innerHTML='';showToast('Saved locally only','error');console.error(err);return null;
+  }
+}
+
+/* ─── SIDEBAR COMPONENTS ───────────────────────────────── */
+function buildPriorities(){
+  const list=document.getElementById('priority-list');list.innerHTML='';
+  if(!data.priorities.length){list.innerHTML='<div class="empty-state">No priorities set. What\'s the most important thing today?</div>';return;}
+  data.priorities.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='priority-item';
+    row.innerHTML=`<span class="priority-num">${i+1}</span><span style="flex:1">${p}</span><button class="icon-btn" onclick="removePriority(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+function addPriority(){
+  const inp=document.getElementById('priority-input');const val=inp.value.trim();
+  if(!val||data.priorities.length>=3)return;
+  data.priorities.push(val);inp.value='';saveData();buildPriorities();updateBriefing();
+}
+function removePriority(i){data.priorities.splice(i,1);saveData();buildPriorities();updateBriefing();}
+document.getElementById('priority-input').addEventListener('keydown',e=>{if(e.key==='Enter')addPriority();});
+
+function buildRituals(){
+  const list=document.getElementById('ritual-list');list.innerHTML='';
+  RITUALS.forEach(r=>{
+    const done=!!data.rituals[r];
+    const row=document.createElement('div');row.className='ritual-item'+(done?' done':'');
+    const cb=document.createElement('input');cb.type='checkbox';cb.checked=done;cb.id='ritual_'+r;
+    cb.addEventListener('change',()=>{data.rituals[r]=cb.checked;saveData();buildRituals();updateBriefing();});
+    const lbl=document.createElement('label');lbl.htmlFor='ritual_'+r;lbl.textContent=r;
+    row.appendChild(cb);row.appendChild(lbl);list.appendChild(row);
+  });
+}
+
+function buildTasks(){
+  const list=document.getElementById('task-list');list.innerHTML='';
+  if(!data.tasks||!data.tasks.length){list.innerHTML='<div class="empty-state">Nothing queued.</div>';return;}
+  data.tasks.forEach((t,i)=>{
+    const row=document.createElement('div');row.className='task-item'+(t.done?' done':'');
+    const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t.done;cb.id='task_'+i;
+    cb.addEventListener('change',()=>{data.tasks[i].done=cb.checked;saveData();buildTasks();updateBriefing();});
+    const lbl=document.createElement('label');lbl.htmlFor='task_'+i;lbl.textContent=t.text;
+    const rem=document.createElement('button');rem.className='icon-btn';rem.textContent='✕';
+    rem.onclick=()=>{data.tasks.splice(i,1);saveData();buildTasks();updateBriefing();};
+    row.appendChild(cb);row.appendChild(lbl);row.appendChild(rem);list.appendChild(row);
+  });
+}
+function addTask(){
+  const inp=document.getElementById('task-input');const val=inp.value.trim();
+  if(!val)return;if(!data.tasks)data.tasks=[];
+  data.tasks.push({text:val,done:false});inp.value='';saveData();buildTasks();updateBriefing();
+}
+document.getElementById('task-input').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+
+function initNotes(){
+  const area=document.getElementById('notes-area');area.value=data.notes||'';
+  area.addEventListener('input',()=>{
+    clearTimeout(notesSaveTimer);
+    notesSaveTimer=setTimeout(()=>{
+      data.notes=area.value;saveData();
+      const s=document.getElementById('notes-saved');s.classList.add('show');
+      setTimeout(()=>s.classList.remove('show'),1500);
+    },600);
+  });
+}
+
+function refreshNews(){
+  const s=[...Array(NEWS_POOL.length).keys()].sort(()=>Math.random()-0.5);
+  activeNewsIndices=s.slice(0,4);data.newsIndices=activeNewsIndices;saveData();renderNews();
+}
+function renderNews(){
+  const c=document.getElementById('news-container');c.innerHTML='';
+  activeNewsIndices.forEach(i=>{
+    const n=NEWS_POOL[i];const item=document.createElement('div');item.className='news-item';
+    item.innerHTML=`<a href="${n.url}" target="_blank" rel="noopener">${n.title}</a><div class="news-summary">${n.summary}</div><div class="news-source">${n.source}</div>`;
+    c.appendChild(item);
+  });
+}
+
+function updateBriefing(){
+  const now=getManilaTime();const h=now.getHours();
+  const greeting=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const localEvents=Object.keys(data.events).length;
+  const totalEvents=localEvents+gcalEvents.length;
+  const ritualCount=Object.values(data.rituals).filter(Boolean).length;
+  const tasks=data.tasks||[];
+  const doneTasks=tasks.filter(t=>t.done).length;
+  const pendingTasks=tasks.length-doneTasks;
+  const hasPriorities=data.priorities.length>0;
+  const lines=[];
+  const dl=totalEvents===0?'wide open':totalEvents<=2?'light':totalEvents<=5?'structured':'packed';
+  lines.push(`${greeting}, JC. ${dl==='wide open'?'Nothing locked in — the day is yours to architect.':dl==='light'?`${totalEvents} commitment${totalEvents!==1?'s':''} on the board. Room to think deeply.`:dl==='structured'?`${totalEvents} blocks on the calendar. Make every one count.`:`${totalEvents} blocks. Protect your decision-making bandwidth.`}`);
+  if(ritualCount===0)lines.push('Rituals not started. Choose your first move.');
+  else if(ritualCount<4)lines.push(`${ritualCount} of 4 rituals done.${ritualCount>=3?' Nearly locked in.':''}`);
+  else lines.push('All 4 rituals complete. Operating at full signal.');
+  if(tasks.length===0)lines.push('Task list empty — define what needs to move today.');
+  else if(doneTasks===0)lines.push(`${tasks.length} task${tasks.length!==1?'s':''} queued. Start with the highest-leverage item.`);
+  else if(pendingTasks===0)lines.push(`All ${tasks.length} tasks cleared. Outstanding execution.`);
+  else lines.push(`${doneTasks} of ${tasks.length} tasks done. ${pendingTasks} still live.`);
+  if(!hasPriorities)lines.push('Priorities not set. Define your top 3 before the day sets them for you.');
+  else lines.push(`Priorities locked: ${data.priorities.join('; ')}.`);
+  document.getElementById('briefing').innerHTML=`<div class="briefing-inner">${lines.map(l=>`<div class="b-line">${l}</div>`).join('')}</div>`;
+}
+
+function updateClock(){
+  const now=getManilaTime();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('en-US',{timeZone:TZ,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})+' PHT';
+  document.getElementById('cal-date').textContent=now.toLocaleDateString('en-US',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const dow=now.getDay();const isWE=dow===0||dow===6;
+  const badge=document.getElementById('day-badge');
+  badge.textContent=isWE?'Weekend':'Weekday';badge.className='day-badge '+(isWE?'weekend':'weekday');
+}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function init(){
+  checkReset();
+  if(!data.tasks)data.tasks=[];if(!data.notes)data.notes='';
+  if(data.newsIndices&&data.newsIndices.length===4)activeNewsIndices=data.newsIndices;
+  else{const s=[...Array(NEWS_POOL.length).keys()].sort(()=>Math.random()-0.5);activeNewsIndices=s.slice(0,4);data.newsIndices=activeNewsIndices;saveData();}
+  updateClock();buildPriorities();buildRituals();buildTasks();initNotes();renderNews();
+  fetchGcalEvents();
+  updateBriefing();
+  setInterval(updateClock,1000);
+  setInterval(()=>{checkReset();fetchGcalEvents();},5*60*1000);
+}
+</script>
+</body>
+</html>
